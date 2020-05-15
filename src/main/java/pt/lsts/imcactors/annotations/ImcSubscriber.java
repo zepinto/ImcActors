@@ -10,4 +10,5 @@ import java.lang.annotation.Target;
 public @interface ImcSubscriber {
     String entity() default "";
     String source() default "";
+    boolean loopback() default false;
 }

@@ -19,7 +19,7 @@ import java.util.logging.Logger;
 
 public abstract class ImcActor {
     private final ArrayList<Message> inbox = new ArrayList<>();
-    private final ArrayList<Message> outbox = new ArrayList<>();
+
     private final ConcurrentHashMap<Class<? extends Message>, ArrayList<Method>> consumers = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Class<? extends Message>, ArrayList<Method>> producers = new ConcurrentHashMap<>();
     private ImcPlatform platform;
@@ -71,37 +71,29 @@ public abstract class ImcActor {
         }
     }
 
-    private void doWork() {
-        double currentTime = getTimeSinceEpoch() / 1000.0;
-        ArrayList<Message> newMessages = processInbox(currentTime);
-        platform.post(this, newMessages);
-    }
-
-    /**
-     * Process all messages in inbox that have been received prior to given time
-     *
-     * @param timestamp Messages past this time won't be processed this time
-     * @return Any resulting messages. All messages will have its timestamp set to the received one.
-     */
-    private final ArrayList<Message> processInbox(double timestamp) {
+    public final ArrayList<Message> processInbox(List<Message> inbox) {
         ArrayList<Message> outbox = new ArrayList<>();
-
         inbox.sort(Comparator.comparingDouble(o -> o.timestamp));
-        inbox.stream().filter(message -> message.timestamp <= timestamp)
-                .forEach(m -> outbox.addAll(process(m)));
-
-        // clear processed messages
-        inbox.removeIf(message -> message.timestamp <= timestamp);
-
-        // make sure all timestamps are set to the same reaction time
-        outbox.forEach(message -> message.timestamp = timestamp);
-
-        // determinism matters.
+        inbox.forEach(m -> outbox.addAll(process(m)));
         outbox.sort(Comparator.comparing(Message::abbrev));
-
         return outbox;
     }
 
+    private final ArrayList<Message> invoke(Method m, Object... args) {
+        ArrayList<Message> outbox = new ArrayList<>();
+        try {
+            Object result = m.invoke(this, args);
+
+            if (result != null && Message.class.isAssignableFrom(result.getClass()))
+                outbox.add((Message)result);
+            else if (result != null && Collection.class.isAssignableFrom(result.getClass()))
+                outbox.addAll((Collection<Message>) result);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return outbox;
+    }
 
     /**
      * Process a single message (by calling all associated subscribers in this actor)
@@ -110,7 +102,7 @@ public abstract class ImcActor {
      * @return A (possibly empty) resulting list of messages
      */
     private final ArrayList<Message> process(Message msg) {
-        outbox.clear();
+        ArrayList<Message> outbox = new ArrayList<>();
         Class<?> clazz = msg.getClass();
         while (!clazz.equals(Object.class)) {
             List<Method> methods = consumers.getOrDefault(msg, new ArrayList<>());
@@ -126,12 +118,7 @@ public abstract class ImcActor {
                     if (!"".equals(annotation.entity())) {
                         // TODO filter entity
                     }
-                    Object result = m.invoke(this, msg);
-
-                    if (result != null && Message.class.isAssignableFrom(result.getClass()))
-                        outbox.add((Message)result);
-                    else if (result != null && Collection.class.isAssignableFrom(result.getClass()))
-                        outbox.addAll((Collection<Message>) result);
+                    outbox.addAll(invoke(m, msg));
                 } catch (Exception e) {
                     Logger.getLogger(getClass().getSimpleName()).throwing(getClass().getSimpleName(),
                             "process()", e);
