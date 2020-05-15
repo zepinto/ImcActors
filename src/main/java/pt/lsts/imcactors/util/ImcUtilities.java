@@ -1,6 +1,9 @@
 package pt.lsts.imcactors.util;
 
 import pt.lsts.imc4j.msg.Message;
+import pt.lsts.imc4j.msg.MessageFactory;
+
+import java.nio.ByteBuffer;
 
 public class ImcUtilities {
 
@@ -15,5 +18,16 @@ public class ImcUtilities {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public static <M extends Message> M clone(M original) {
+        try {
+            M ret = (M) Message.deserialize(original.serialize());
+            return ret;
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

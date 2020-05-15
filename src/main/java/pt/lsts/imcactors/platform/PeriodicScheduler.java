@@ -1,5 +1,6 @@
 package pt.lsts.imcactors.platform;
 
+import pt.lsts.imc4j.msg.Message;
 import pt.lsts.imcactors.ImcActor;
 import pt.lsts.imcactors.annotations.ImcPeriodic;
 import pt.lsts.imcactors.platform.bus.ActorBus;
@@ -7,12 +8,13 @@ import pt.lsts.imcactors.util.DurationUtilities;
 import pt.lsts.imcactors.util.ReflectionUtilities;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
 
 public class PeriodicScheduler {
 
-    TreeSet<PeriodicCallback> callbacks = new TreeSet<>();
+    private TreeSet<PeriodicCallback> callbacks = new TreeSet<>();
 
     public void register(ImcActor actor, long startTimeMillis) {
         List<Method> periodicCallbacks = ReflectionUtilities.getAnnotatedMethods(ImcPeriodic.class, actor.getClass());

@@ -71,14 +71,6 @@ public abstract class ImcActor {
         }
     }
 
-    public final ArrayList<Message> processInbox(List<Message> inbox) {
-        ArrayList<Message> outbox = new ArrayList<>();
-        inbox.sort(Comparator.comparingDouble(o -> o.timestamp));
-        inbox.forEach(m -> outbox.addAll(process(m)));
-        outbox.sort(Comparator.comparing(Message::abbrev));
-        return outbox;
-    }
-
     private final ArrayList<Message> invoke(Method m, Object... args) {
         ArrayList<Message> outbox = new ArrayList<>();
         try {
@@ -101,7 +93,7 @@ public abstract class ImcActor {
      * @param msg The message to process
      * @return A (possibly empty) resulting list of messages
      */
-    private final ArrayList<Message> process(Message msg) {
+    public final ArrayList<Message> process(Message msg, boolean loopback) {
         ArrayList<Message> outbox = new ArrayList<>();
         Class<?> clazz = msg.getClass();
         while (!clazz.equals(Object.class)) {
@@ -118,7 +110,9 @@ public abstract class ImcActor {
                     if (!"".equals(annotation.entity())) {
                         // TODO filter entity
                     }
-                    outbox.addAll(invoke(m, msg));
+                    if (!loopback || annotation.loopback()) {
+                        outbox.addAll(invoke(m, msg));
+                    }
                 } catch (Exception e) {
                     Logger.getLogger(getClass().getSimpleName()).throwing(getClass().getSimpleName(),
                             "process()", e);

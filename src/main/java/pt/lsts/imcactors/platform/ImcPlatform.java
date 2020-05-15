@@ -6,6 +6,8 @@ import pt.lsts.imcactors.platform.clock.IPlatformClock;
 import pt.lsts.imcactors.platform.clock.RealTimeClock;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -14,17 +16,24 @@ public class ImcPlatform {
     private IPlatformClock clock = new RealTimeClock();
     private ConcurrentHashMap<Integer, ImcActor> actors = new ConcurrentHashMap<>();
     private ConcurrentHashMap<Integer, String> actorNames = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<Class<? extends Message>, HashSet<ImcActor>> subscribers = new ConcurrentHashMap<>();
     private int localImcId;
     private int nextActorId = 0;
 
     private void registerActor(Class<? extends ImcActor> actorClass, String name) throws Exception {
         ImcActor actor = actorClass.newInstance();
         actor.init(this);
-        ArrayList<Class<? extends Message>> subs = new ArrayList<>();
-        subs.addAll(actor.getSubscriptions());
+        actor.getSubscriptions().forEach(clazz -> {
+            subscribers.putIfAbsent(clazz, new HashSet<>());
+            subscribers.get(clazz).add(actor);
+        });
         int actorId = ++nextActorId;
         actors.put(actorId, actor);
         actorNames.put(actorId, name);
+    }
+
+    public Collection<ImcActor> subscribingActors(Class<? extends Message> message) {
+        return subscribers.get(message);
     }
 
     public long timeSinceEpoch() {
