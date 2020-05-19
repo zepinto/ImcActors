@@ -5,10 +5,9 @@ import pt.lsts.imcactors.ImcActor;
 import pt.lsts.imcactors.platform.clock.IPlatformClock;
 import pt.lsts.imcactors.platform.clock.RealTimeClock;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ImcPlatform {
@@ -48,5 +47,17 @@ public class ImcPlatform {
         this.localImcId = imcId;
     }
 
+    public ImcPlatform() {
+        this(0, "DummyPlatform");
+    }
+
+    public ImcActor instantiateActor(String actorClass, LinkedHashMap<String, String> state) {
+        // TODO
+        return null;
+    }
+
+    public void destroyActor(ImcActor actor) {
+        // TODO
+    }
 
 }

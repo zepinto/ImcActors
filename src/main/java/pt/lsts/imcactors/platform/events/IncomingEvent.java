@@ -11,15 +11,17 @@ import java.util.stream.Collectors;
 public class IncomingEvent extends PlatformEvent {
 
     private Message msg;
+    private boolean loopback;
 
-    public IncomingEvent(ImcActor actor, Message message) {
+    public IncomingEvent(ImcActor actor, Message message, boolean loopback) {
         super(actor, (long)(message.timestamp * 1000.0));
         this.msg = message;
+        this.loopback = loopback;
     }
 
     @Override
     public List<PlatformEvent> processEvent(ImcPlatform platform) {
-        ArrayList<Message> messages = actor.process(msg);
+        ArrayList<Message> messages = actor.process(msg, loopback);
         return messages.stream()
                 .map(m -> new OutgoingEvent(actor, m)).collect(Collectors.toList());
     }

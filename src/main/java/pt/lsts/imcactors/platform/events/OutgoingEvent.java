@@ -22,8 +22,8 @@ public class OutgoingEvent extends PlatformEvent {
     public List<PlatformEvent> processEvent(ImcPlatform platform) {
         ArrayList<PlatformEvent> events = new ArrayList<>();
         platform.subscribingActors(msg.getClass()).forEach(target -> {
-            if (actor == target)
-            events.add(new IncomingEvent(target, msg));
+            boolean loopback = (actor == target);
+            events.add(new IncomingEvent(target, msg, loopback));
         });
         return events;
     }
