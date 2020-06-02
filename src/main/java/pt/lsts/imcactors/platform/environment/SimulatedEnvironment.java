@@ -19,9 +19,9 @@ public class SimulatedEnvironment {
         return mediums.keySet();
     }
 
-    public Double sample(String sensor, PhysicalState state) {
+    public <T> T sample(String sensor, PhysicalState state) {
         if (sensors.containsKey(sensor))
-            return sensors.get(sensor).sample(state);
+            return (T)sensors.get(sensor).sample(state);
         Logger.getLogger(getClass().getName()).warning("Sensor not available: "+sensor);
         return null;
     }

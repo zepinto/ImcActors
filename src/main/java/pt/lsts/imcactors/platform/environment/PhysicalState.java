@@ -4,6 +4,7 @@ import pt.lsts.imc4j.util.WGS84Utilities;
 
 public class PhysicalState {
 
+    // pose
     private final double latitude, longitude, depth, heading, speed;
 
     public PhysicalState(double latitude, double longitude, double depth, double heading, double speed) {
@@ -37,5 +38,4 @@ public class PhysicalState {
     public double distance(PhysicalState other) {
         return WGS84Utilities.distance(latitude, longitude, other.getLatitude(), other.getLongitude());
     }
-
 }

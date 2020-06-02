@@ -10,21 +10,20 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
-public abstract class ImcActor {
+public abstract class AbstractActor {
     private final ArrayList<Message> inbox = new ArrayList<>();
 
     private final ConcurrentHashMap<Class<? extends Message>, ArrayList<Method>> consumers = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Class<? extends Message>, ArrayList<Method>> producers = new ConcurrentHashMap<>();
     private ImcPlatform platform;
 
-    public ImcActor() { }
+    public AbstractActor() { }
 
     public final Collection<Class<? extends Message>> getSubscriptions() {
         return consumers.keySet();

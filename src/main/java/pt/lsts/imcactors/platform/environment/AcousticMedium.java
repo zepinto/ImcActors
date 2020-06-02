@@ -2,6 +2,7 @@ package pt.lsts.imcactors.platform.environment;
 
 import pt.lsts.imc4j.annotations.Parameter;
 import pt.lsts.imc4j.msg.Message;
+import pt.lsts.imcactors.ImcActor;
 
 public class AcousticMedium implements ICommMedium {
 

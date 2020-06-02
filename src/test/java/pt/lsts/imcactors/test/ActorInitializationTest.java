@@ -5,7 +5,8 @@ import org.junit.Test;
 import pt.lsts.imc4j.msg.Announce;
 import pt.lsts.imc4j.msg.EstimatedState;
 import pt.lsts.imcactors.ImcActor;
-import pt.lsts.imcactors.annotations.ImcSubscriber;
+import pt.lsts.imcactors.annotations.Receive;
+import pt.lsts.imcactors.annotations.Device;
 import pt.lsts.imcactors.exceptions.MalformedActorException;
 import pt.lsts.imcactors.platform.ImcPlatform;
 
@@ -15,12 +16,12 @@ import java.util.List;
 public class ActorInitializationTest {
 
     class CorrectActor extends ImcActor {
-        @ImcSubscriber
+        @Receive
         void on(EstimatedState msg) {
 
         }
 
-        @ImcSubscriber
+        @Receive
         List<Announce> on2(EstimatedState msg) {
             return Arrays.asList(new Announce());
         }
@@ -33,12 +34,12 @@ public class ActorInitializationTest {
     }
 
     class MalformedActor extends ImcActor {
-        @ImcSubscriber
-        public void on(EstimatedState msg) {
+        @Receive
+        public void on(EstimatedState msg, @Device int x) {
 
         }
 
-        @ImcSubscriber
+        @Receive
         public List<Object> on2(EstimatedState msg) {
             return Arrays.asList(new Announce());
         }

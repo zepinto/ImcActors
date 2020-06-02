@@ -2,7 +2,7 @@ package pt.lsts.imcactors.platform.events;
 
 import pt.lsts.imc4j.msg.Message;
 import pt.lsts.imcactors.ImcActor;
-import pt.lsts.imcactors.annotations.ImcPeriodic;
+import pt.lsts.imcactors.annotations.Periodic;
 import pt.lsts.imcactors.platform.ImcPlatform;
 import pt.lsts.imcactors.util.DurationUtilities;
 
@@ -21,7 +21,7 @@ public class PeriodicEvent extends PlatformEvent {
 
     @Override
     public List<PlatformEvent> processEvent(ImcPlatform platform) {
-        long period = DurationUtilities.parseDuration(method.getAnnotation(ImcPeriodic.class).value());
+        long period = DurationUtilities.parseDuration(method.getAnnotation(Periodic.class).value());
         ArrayList<PlatformEvent> events = new ArrayList<>();
 
         try {
@@ -40,6 +40,6 @@ public class PeriodicEvent extends PlatformEvent {
 
     @Override
     public String describe() {
-        return "{\"method\"="+method.getName()+", \"every\"="+method.getAnnotation(ImcPeriodic.class).value()+"}";
+        return "{\"method\"="+method.getName()+", \"every\"="+method.getAnnotation(Periodic.class).value()+"}";
     }
 }

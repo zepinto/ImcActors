@@ -1,10 +1,8 @@
 package pt.lsts.imcactors.platform.environment;
 
-public interface ISensor {
+public interface ISensor<T> extends IDevice {
 
-    String name();
-
-    default Double sample(PhysicalState state) {
+    default T sample(PhysicalState state) {
         return null;
     }
 

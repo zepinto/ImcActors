@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface ImcSubscriber {
+public @interface Receive {
     String entity() default "";
     String source() default "";
     boolean loopback() default false;
