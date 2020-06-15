@@ -1,6 +1,6 @@
 package pt.lsts.imcactors.platform.events;
 
-import pt.lsts.imcactors.ImcActor;
+import pt.lsts.imcactors.actors.ImcActor;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

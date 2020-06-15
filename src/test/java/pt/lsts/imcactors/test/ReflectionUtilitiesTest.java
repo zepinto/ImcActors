@@ -3,7 +3,7 @@ package pt.lsts.imcactors.test;
 import org.junit.Assert;
 import org.junit.Test;
 import pt.lsts.imc4j.msg.EstimatedState;
-import pt.lsts.imcactors.ImcActor;
+import pt.lsts.imcactors.actors.ImcActor;
 import pt.lsts.imcactors.annotations.Receive;
 import pt.lsts.imcactors.util.ReflectionUtilities;
 

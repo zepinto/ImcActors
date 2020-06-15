@@ -1,4 +1,4 @@
-package pt.lsts.imcactors.platform.environment;
+package pt.lsts.imcactors.environment;
 
 import pt.lsts.imc4j.msg.Message;
 
@@ -21,15 +21,9 @@ public class SimulatedEnvironment {
 
     public <T> T sample(String sensor, PhysicalState state) {
         if (sensors.containsKey(sensor))
-            return (T)sensors.get(sensor).sample(state);
+            return (T)sensors.get(sensor).sample();
         Logger.getLogger(getClass().getName()).warning("Sensor not available: "+sensor);
         return null;
     }
 
-    public Message transmit(Message m, String medium, PhysicalState src, PhysicalState dst) {
-        if (mediums.containsKey(medium))
-            return mediums.get(medium).transmit(m, src, dst);
-        Logger.getLogger(getClass().getName()).warning("Medium not available: "+medium);
-        return null;
-    }
 }

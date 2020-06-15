@@ -3,10 +3,10 @@ package pt.lsts.imcactors.test;
 import org.junit.Assert;
 import org.junit.Test;
 import pt.lsts.imcactors.platform.PlatformConfiguration;
-import pt.lsts.imcactors.platform.environment.ConstantSensor;
-import pt.lsts.imcactors.platform.environment.SatelliteMedium;
-import pt.lsts.imcactors.platform.environment.UnicycleActuator;
-import pt.lsts.imcactors.platform.environment.WiFiMedium;
+import pt.lsts.imcactors.environment.ConstantSensor;
+import pt.lsts.imcactors.environment.SatelliteMedium;
+import pt.lsts.imcactors.environment.UnicycleActuator;
+import pt.lsts.imcactors.environment.WiFiMedium;
 import pt.lsts.imcactors.util.IniConfiguration;
 
 import java.io.File;

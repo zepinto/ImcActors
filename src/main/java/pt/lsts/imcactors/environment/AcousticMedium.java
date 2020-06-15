@@ -1,10 +1,10 @@
-package pt.lsts.imcactors.platform.environment;
+package pt.lsts.imcactors.environment;
 
 import pt.lsts.imc4j.annotations.Parameter;
 import pt.lsts.imc4j.msg.Message;
-import pt.lsts.imcactors.ImcActor;
+import pt.lsts.imcactors.util.ImcUtilities;
 
-public class AcousticMedium implements ICommMedium {
+public class AcousticMedium extends AbstractMedium {
 
     @Parameter(description = "Sound speed, in m/s")
     double soundSpeed = 1500;
@@ -21,20 +21,12 @@ public class AcousticMedium implements ICommMedium {
     }
 
     @Override
-    public Message transmit(Message m, PhysicalState src, PhysicalState dst) {
-        // if one of the vehicles is outside the water...
+    Double transmissionDelay(PhysicalState src, PhysicalState dst, Message m) {
         if (src.getDepth() < 0 || dst.getDepth() < 0)
             return null;
-
-        // vehicles are too far away
         if (src.distance(dst) > maximumRange)
             return null;
-
-        // add latency to the message
         int msgSize = m.serializeFields().length;
-        double latency = (src.distance(dst) / soundSpeed) + msgSize / baudrate;
-        m.timestamp += latency;
-
-        return m;
+        return (src.distance(dst) / soundSpeed) + msgSize / baudrate;
     }
 }

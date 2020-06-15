@@ -1,4 +1,4 @@
-package pt.lsts.imcactors.platform.environment;
+package pt.lsts.imcactors.environment;
 
 import pt.lsts.imc4j.util.WGS84Utilities;
 

@@ -1,8 +1,9 @@
-package pt.lsts.imcactors.platform.environment;
+package pt.lsts.imcactors.environment;
 
 import pt.lsts.imc4j.annotations.Parameter;
+import pt.lsts.imc4j.msg.Temperature;
 
-public class ConstantSensor implements ISensor<Double> {
+public class ConstantSensor extends AbstractDevice implements ISensor<Temperature> {
 
     @Parameter
     private double value;
@@ -20,13 +21,9 @@ public class ConstantSensor implements ISensor<Double> {
         this.value = value;
     }
 
-    @Override
-    public Double sample(PhysicalState state) {
-        return value;
-    }
-
-    @Override
-    public String name() {
-        return name;
+    public Temperature sample(PhysicalState state) {
+        Temperature t = new Temperature();
+        t.value = (float) value;
+        return t;
     }
 }

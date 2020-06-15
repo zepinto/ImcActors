@@ -1,6 +1,6 @@
 package pt.lsts.imcactors.platform;
 
-import pt.lsts.imcactors.ImcActor;
+import pt.lsts.imcactors.actors.ImcActor;
 import pt.lsts.imcactors.annotations.Periodic;
 import pt.lsts.imcactors.util.DurationUtilities;
 import pt.lsts.imcactors.util.ReflectionUtilities;

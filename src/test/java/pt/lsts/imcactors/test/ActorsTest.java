@@ -4,7 +4,7 @@ import pt.lsts.imc4j.msg.Temperature;
 import pt.lsts.imcactors.annotations.Device;
 import pt.lsts.imcactors.annotations.Periodic;
 import pt.lsts.imcactors.annotations.Receive;
-import pt.lsts.imcactors.platform.environment.ISensor;
+import pt.lsts.imcactors.environment.ISensor;
 
 public class ActorsTest {
 

@@ -1,23 +1,33 @@
 package pt.lsts.imcactors.platform;
 
 import pt.lsts.imc4j.util.PojoConfig;
-import pt.lsts.imcactors.platform.environment.*;
+import pt.lsts.imcactors.actors.AbstractActor;
+import pt.lsts.imcactors.actors.ImcActor;
+import pt.lsts.imcactors.environment.*;
+import pt.lsts.imcactors.platform.clock.IPlatformClock;
+import pt.lsts.imcactors.platform.clock.RealTimeClock;
 import pt.lsts.imcactors.util.IniConfiguration;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This class holds a platform configuration: its sensors, actuators, media and actors
  */
 public class PlatformConfiguration {
 
+    // Platform hardware devices
     private ArrayList<ISensor> sensors = new ArrayList<>();
     private ArrayList<IActuator> actuators = new ArrayList<>();
     private ArrayList<ICommMedium> media = new ArrayList<>();
 
+    // Platform actors
+    private LinkedHashMap<String, AbstractActor> actors = new LinkedHashMap<>();
+
+    // Platform clock
+    private IPlatformClock clock = new RealTimeClock();
+
+    // Platform details
     private String platformName;
     private int imcId;
 
@@ -75,6 +85,20 @@ public class PlatformConfiguration {
             }
         }
 
+        // Store actor properties
+        for (Map.Entry<String, AbstractActor> actor : actors.entrySet()) {
+            try {
+                ini.set(actor.getKey(), "class", actor.getValue().getClass().getName());
+                Properties state = PojoConfig.getProperties(actor.getValue());
+                for (String key : state.stringPropertyNames()) {
+                    ini.set(actor.getKey(), key, state.getProperty(key));
+                }
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
         return ini.toString();
     }
 
@@ -104,5 +128,9 @@ public class PlatformConfiguration {
 
     public int getImcId() {
         return imcId;
+    }
+
+    private void addActor(AbstractActor actor, String name) throws Exception {
+        actors.put(name, actor);
     }
 }

@@ -1,6 +1,6 @@
 package pt.lsts.imcactors.platform.events;
 
-import pt.lsts.imcactors.ImcActor;
+import pt.lsts.imcactors.actors.ImcActor;
 import pt.lsts.imcactors.platform.ImcPlatform;
 
 import java.util.ArrayList;

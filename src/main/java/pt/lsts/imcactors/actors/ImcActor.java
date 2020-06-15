@@ -1,4 +1,4 @@
-package pt.lsts.imcactors;
+package pt.lsts.imcactors.actors;
 
 import pt.lsts.imc4j.msg.Message;
 import pt.lsts.imcactors.annotations.Receive;

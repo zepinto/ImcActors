@@ -1,9 +1,8 @@
 package pt.lsts.imcactors.platform.events;
 
 import pt.lsts.imc4j.msg.Message;
-import pt.lsts.imcactors.ImcActor;
+import pt.lsts.imcactors.actors.ImcActor;
 import pt.lsts.imcactors.platform.ImcPlatform;
-import pt.lsts.imcactors.platform.environment.ICommMedium;
 
 import java.util.List;
 

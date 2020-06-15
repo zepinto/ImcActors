@@ -1,7 +1,8 @@
 package pt.lsts.imcactors.platform;
 
 import pt.lsts.imc4j.msg.Message;
-import pt.lsts.imcactors.ImcActor;
+import pt.lsts.imcactors.actors.ImcActor;
+import pt.lsts.imcactors.environment.IDevice;
 import pt.lsts.imcactors.platform.clock.IPlatformClock;
 import pt.lsts.imcactors.platform.clock.RealTimeClock;
 
@@ -18,6 +19,12 @@ public class ImcPlatform {
     private ConcurrentHashMap<Class<? extends Message>, HashSet<ImcActor>> subscribers = new ConcurrentHashMap<>();
     private int localImcId;
     private int nextActorId = 0;
+
+    public IDevice getDevice(String name) {
+        return null;
+    }
+
+
 
     private void registerActor(Class<? extends ImcActor> actorClass, String name) throws Exception {
         ImcActor actor = actorClass.newInstance();

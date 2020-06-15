@@ -1,11 +1,13 @@
-package pt.lsts.imcactors;
+package pt.lsts.imcactors.actors;
 
 import pt.lsts.imc4j.msg.Message;
+import pt.lsts.imcactors.annotations.Device;
 import pt.lsts.imcactors.annotations.Receive;
 import pt.lsts.imcactors.exceptions.MalformedActorException;
 import pt.lsts.imcactors.platform.ImcPlatform;
 import pt.lsts.imcactors.util.ReflectionUtilities;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -21,6 +23,7 @@ public abstract class AbstractActor {
 
     private final ConcurrentHashMap<Class<? extends Message>, ArrayList<Method>> consumers = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Class<? extends Message>, ArrayList<Method>> producers = new ConcurrentHashMap<>();
+    private final ArrayList<String> platformRequirements = new ArrayList<>();
     private ImcPlatform platform;
 
     public AbstractActor() { }
@@ -37,10 +40,18 @@ public abstract class AbstractActor {
         for (Method c : msgConsumers) {
             Class<?>[] params = c.getParameterTypes();
 
-            if (params.length != 1)
-                throw new MalformedActorException("ImcSubscriber methods need one argument: " + c.toGenericString());
+            if (params.length < 1)
+                throw new MalformedActorException("ImcSubscriber methods need at lest one argument: " + c.toGenericString());
             if (!Message.class.isAssignableFrom(params[0]))
-                throw new MalformedActorException("ImcSubscriber argument must be a Message: " + c.toGenericString());
+                throw new MalformedActorException("ImcSubscriber first argument must be a Message: " + c.toGenericString());
+            for (int i = 1; i < params.length; i++) {
+                Annotation[] ann = c.getParameterAnnotations()[i];
+                if (ann.length != 1 && ann[0].annotationType() != Device.class) {
+                    throw new MalformedActorException("ImcSubscriber requirements must be devices: " + c.toGenericString());
+                }
+                platformRequirements.add(((Device)ann[0]).value());
+            }
+
             if (c.getReturnType() != Void.TYPE) {
                 if (Message.class.isAssignableFrom(c.getReturnType())) {
                     producers.putIfAbsent((Class<? extends Message>)c.getReturnType(), new ArrayList<>());
@@ -103,6 +114,7 @@ public abstract class AbstractActor {
             methods.forEach(m -> {
                 try {
                     Receive annotation = m.getAnnotation(Receive.class);
+
                     if (!"".equals(annotation.source())) {
                         // TODO filter source
                     }
@@ -110,7 +122,14 @@ public abstract class AbstractActor {
                         // TODO filter entity
                     }
                     if (!loopback || annotation.loopback()) {
-                        outbox.addAll(invoke(m, msg));
+                        Object[] args = new Object[m.getParameterAnnotations().length];
+                        args[0] = msg;
+                        // also inject devices on the method invocation
+                        if (m.getParameterAnnotations().length > 1) {
+                            for (int i = 1; i < args.length; i++)
+                                args[i] = platform.getDevice(((Device)(m.getParameterAnnotations()[i][0])).value());
+                        }
+                        outbox.addAll(invoke(m, args));
                     }
                 } catch (Exception e) {
                     Logger.getLogger(getClass().getSimpleName()).throwing(getClass().getSimpleName(),

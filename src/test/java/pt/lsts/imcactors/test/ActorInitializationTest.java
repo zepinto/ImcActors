@@ -4,9 +4,10 @@ import org.junit.Assert;
 import org.junit.Test;
 import pt.lsts.imc4j.msg.Announce;
 import pt.lsts.imc4j.msg.EstimatedState;
-import pt.lsts.imcactors.ImcActor;
+import pt.lsts.imcactors.actors.ImcActor;
 import pt.lsts.imcactors.annotations.Receive;
 import pt.lsts.imcactors.annotations.Device;
+import pt.lsts.imcactors.environment.ISensor;
 import pt.lsts.imcactors.exceptions.MalformedActorException;
 import pt.lsts.imcactors.platform.ImcPlatform;
 
@@ -35,8 +36,8 @@ public class ActorInitializationTest {
 
     class MalformedActor extends ImcActor {
         @Receive
-        public void on(EstimatedState msg, @Device int x) {
-
+        public void on(EstimatedState msg, @Device("Temperature") ISensor tempSensor) {
+            tempSensor.sample();
         }
 
         @Receive
