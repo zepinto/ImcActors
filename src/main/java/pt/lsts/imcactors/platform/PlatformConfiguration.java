@@ -53,6 +53,13 @@ public class PlatformConfiguration {
                         configuration.actuators.add((IActuator) o);
                     if (o instanceof ICommMedium)
                         configuration.media.add((ICommMedium) o);
+                    if (o instanceof AbstractActor) {
+                        AbstractActor actor = (AbstractActor) o;
+                        for (Map.Entry<String, String> props : ini.get(s).entrySet()) {
+                            PojoConfig.setProperty(actor, props.getKey(), props.getValue());
+                        }
+                        configuration.addActor(actor, s);
+                    }
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -130,7 +137,7 @@ public class PlatformConfiguration {
         return imcId;
     }
 
-    private void addActor(AbstractActor actor, String name) throws Exception {
+    public void addActor(AbstractActor actor, String name) throws Exception {
         actors.put(name, actor);
     }
 }

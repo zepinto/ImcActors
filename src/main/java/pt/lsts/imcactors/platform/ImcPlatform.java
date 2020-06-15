@@ -24,8 +24,6 @@ public class ImcPlatform {
         return null;
     }
 
-
-
     private void registerActor(Class<? extends ImcActor> actorClass, String name) throws Exception {
         ImcActor actor = actorClass.newInstance();
         actor.init(this);

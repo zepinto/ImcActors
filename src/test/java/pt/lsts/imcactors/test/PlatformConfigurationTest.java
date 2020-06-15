@@ -2,6 +2,7 @@ package pt.lsts.imcactors.test;
 
 import org.junit.Assert;
 import org.junit.Test;
+import pt.lsts.imcactors.actors.DummyActor;
 import pt.lsts.imcactors.platform.PlatformConfiguration;
 import pt.lsts.imcactors.environment.ConstantSensor;
 import pt.lsts.imcactors.environment.SatelliteMedium;
@@ -22,7 +23,8 @@ public class PlatformConfigurationTest {
         configuration.getMedia().add(new WiFiMedium());
         configuration.getMedia().add(new SatelliteMedium());
         configuration.getActuators().add(new UnicycleActuator(1, 15));
-
+        configuration.addActor(new DummyActor(), "dummy1");
+        configuration.addActor(new DummyActor(), "dummy2");
         configuration.setImcId(7008);
         configuration.setPlatformName("ExamplePlatform");
 
