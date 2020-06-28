@@ -1,15 +1,15 @@
 package pt.lsts.imcactors.platform.events;
 
-import pt.lsts.imcactors.actors.ImcActor;
+import pt.lsts.imcactors.actors.AbstractActor;
 import pt.lsts.imcactors.platform.ImcPlatform;
 
 import java.util.List;
 
 public abstract class PlatformEvent implements Comparable<PlatformEvent> {
-    protected ImcActor actor;
+    protected AbstractActor actor;
     protected long timestamp;
 
-    public PlatformEvent(ImcActor actor, long timestamp) {
+    public PlatformEvent(AbstractActor actor, long timestamp) {
         this.actor = actor;
         this.timestamp = timestamp;
     }

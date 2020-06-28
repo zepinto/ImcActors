@@ -4,7 +4,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import pt.lsts.imc4j.msg.Announce;
 import pt.lsts.imc4j.msg.EstimatedState;
-import pt.lsts.imcactors.actors.ImcActor;
+import pt.lsts.imcactors.actors.AbstractActor;
 import pt.lsts.imcactors.annotations.Receive;
 import pt.lsts.imcactors.annotations.Device;
 import pt.lsts.imcactors.environment.ISensor;
@@ -16,7 +16,7 @@ import java.util.List;
 
 public class ActorInitializationTest {
 
-    class CorrectActor extends ImcActor {
+    class CorrectActor extends AbstractActor {
         @Receive
         void on(EstimatedState msg) {
 
@@ -34,7 +34,7 @@ public class ActorInitializationTest {
         actor.init(new ImcPlatform());
     }
 
-    class MalformedActor extends ImcActor {
+    class MalformedActor extends AbstractActor {
         @Receive
         public void on(EstimatedState msg, @Device("Temperature") ISensor tempSensor) {
             tempSensor.sample();

@@ -1,6 +1,6 @@
 package pt.lsts.imcactors.platform;
 
-import pt.lsts.imcactors.actors.ImcActor;
+import pt.lsts.imcactors.actors.AbstractActor;
 import pt.lsts.imcactors.annotations.Periodic;
 import pt.lsts.imcactors.util.DurationUtilities;
 import pt.lsts.imcactors.util.ReflectionUtilities;
@@ -13,7 +13,7 @@ public class PeriodicScheduler {
 
     private TreeSet<PeriodicCallback> callbacks = new TreeSet<>();
 
-    public void register(ImcActor actor, long startTimeMillis) {
+    public void register(AbstractActor actor, long startTimeMillis) {
         List<Method> periodicCallbacks = ReflectionUtilities.getAnnotatedMethods(Periodic.class, actor.getClass());
         for (Method m : periodicCallbacks) {
             PeriodicCallback callback = new PeriodicCallback();
@@ -25,7 +25,7 @@ public class PeriodicScheduler {
         }
     }
 
-    public void removeActor(ImcActor actor) {
+    public void removeActor(AbstractActor actor) {
         callbacks.removeIf(callback -> callback.instance == actor);
     }
 

@@ -1,7 +1,7 @@
 package pt.lsts.imcactors.platform.bus;
 
 import pt.lsts.imc4j.msg.Message;
-import pt.lsts.imcactors.actors.ImcActor;
+import pt.lsts.imcactors.actors.AbstractActor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,14 +10,14 @@ import java.util.stream.Collectors;
 
 public class ActorBus {
 
-    private ConcurrentHashMap<ImcActor, ArrayList<Class<? extends Message>>> actors = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<ImcActor, ArrayList<Message>> inboxes = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<AbstractActor, ArrayList<Class<? extends Message>>> actors = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<AbstractActor, ArrayList<Message>> inboxes = new ConcurrentHashMap<>();
 
     /**
      * Register an actor in this bus
      * @param actor
      */
-    public void register(ImcActor actor) {
+    public void register(AbstractActor actor) {
         ArrayList<Class<? extends Message>> subs = new ArrayList<>();
         subs.addAll(actor.getSubscriptions());
         actors.putIfAbsent(actor, subs);
@@ -43,7 +43,7 @@ public class ActorBus {
      * @param timestamp Retrieve messages only until this time
      * @return All messages in the actor's inbox until given time
      */
-    public List<Message> poll(ImcActor actor, double timestamp) {
+    public List<Message> poll(AbstractActor actor, double timestamp) {
         ArrayList<Message> inbox = inboxes.getOrDefault(actor, new ArrayList<>());
         List<Message> curMsgs = inbox.stream()
             .filter(msg->msg.timestamp <= timestamp).collect(Collectors.toList());

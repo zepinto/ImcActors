@@ -1,7 +1,7 @@
 package pt.lsts.imcactors.platform.events;
 
 import pt.lsts.imc4j.msg.Message;
-import pt.lsts.imcactors.actors.ImcActor;
+import pt.lsts.imcactors.actors.AbstractActor;
 import pt.lsts.imcactors.platform.ImcPlatform;
 
 import java.util.ArrayList;
@@ -11,7 +11,7 @@ public class OutgoingEvent extends PlatformEvent {
 
     private Message msg;
 
-    public OutgoingEvent(ImcActor actor, Message message) {
+    public OutgoingEvent(AbstractActor actor, Message message) {
         super(actor, (long)(message.timestamp * 1000.0));
         this.msg = message;
     }

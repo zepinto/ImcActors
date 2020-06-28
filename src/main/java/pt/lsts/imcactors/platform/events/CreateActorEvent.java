@@ -21,7 +21,12 @@ public class CreateActorEvent extends PlatformEvent {
 
     @Override
     public List<PlatformEvent> processEvent(ImcPlatform platform) {
-        platform.instantiateActor(actorClass, state);
+        try {
+            platform.instantiateActor(actorClass, state);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
         return new ArrayList<>();
     }
 

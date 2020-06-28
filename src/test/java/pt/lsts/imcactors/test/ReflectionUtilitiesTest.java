@@ -3,7 +3,7 @@ package pt.lsts.imcactors.test;
 import org.junit.Assert;
 import org.junit.Test;
 import pt.lsts.imc4j.msg.EstimatedState;
-import pt.lsts.imcactors.actors.ImcActor;
+import pt.lsts.imcactors.actors.AbstractActor;
 import pt.lsts.imcactors.annotations.Receive;
 import pt.lsts.imcactors.util.ReflectionUtilities;
 
@@ -18,7 +18,7 @@ public class ReflectionUtilitiesTest {
         Assert.assertEquals(2, methods.size());
     }
 
-    static class SuperClass extends ImcActor {
+    static class SuperClass extends AbstractActor {
         @Receive
         void on(EstimatedState state) { }
     }

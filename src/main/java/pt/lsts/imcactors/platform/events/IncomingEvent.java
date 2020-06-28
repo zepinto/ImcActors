@@ -1,7 +1,7 @@
 package pt.lsts.imcactors.platform.events;
 
 import pt.lsts.imc4j.msg.Message;
-import pt.lsts.imcactors.actors.ImcActor;
+import pt.lsts.imcactors.actors.AbstractActor;
 import pt.lsts.imcactors.platform.ImcPlatform;
 
 import java.util.ArrayList;
@@ -13,7 +13,7 @@ public class IncomingEvent extends PlatformEvent {
     private Message msg;
     private boolean loopback;
 
-    public IncomingEvent(ImcActor actor, Message message, boolean loopback) {
+    public IncomingEvent(AbstractActor actor, Message message, boolean loopback) {
         super(actor, (long)(message.timestamp * 1000.0));
         this.msg = message;
         this.loopback = loopback;

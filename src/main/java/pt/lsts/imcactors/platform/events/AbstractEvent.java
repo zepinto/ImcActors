@@ -1,6 +1,6 @@
 package pt.lsts.imcactors.platform.events;
 
-import pt.lsts.imcactors.actors.ImcActor;
+import pt.lsts.imcactors.actors.AbstractActor;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -10,7 +10,7 @@ public abstract class AbstractEvent<T> {
 
     private double timestamp;
     private T payload;
-    private ImcActor source = null;
+    private AbstractActor source = null;
     private static SimpleDateFormat sdf = new SimpleDateFormat("YYYY-MM-dd hh:mm:ss.SSS");
 
     static {
@@ -30,11 +30,11 @@ public abstract class AbstractEvent<T> {
         return payload;
     }
 
-    public ImcActor getSource() {
+    public AbstractActor getSource() {
         return source;
     }
 
-    public void setSource(ImcActor source) {
+    public void setSource(AbstractActor source) {
         this.source = source;
     }
 

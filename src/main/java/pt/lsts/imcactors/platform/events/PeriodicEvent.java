@@ -1,7 +1,7 @@
 package pt.lsts.imcactors.platform.events;
 
 import pt.lsts.imc4j.msg.Message;
-import pt.lsts.imcactors.actors.ImcActor;
+import pt.lsts.imcactors.actors.AbstractActor;
 import pt.lsts.imcactors.annotations.Periodic;
 import pt.lsts.imcactors.platform.ImcPlatform;
 import pt.lsts.imcactors.util.DurationUtilities;
@@ -15,7 +15,7 @@ public class PeriodicEvent extends PlatformEvent {
 
     private Method method;
 
-    public PeriodicEvent(ImcActor actor, long timestamp, Method m) {
+    public PeriodicEvent(AbstractActor actor, long timestamp, Method m) {
         super(actor, timestamp);
     }
 

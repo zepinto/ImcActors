@@ -15,70 +15,117 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * This class represents a platform (vehicle, console, gateway, ...)
+ * A platform holds an hardware configuration and a series of actors.
+ */
 public class ImcPlatform {
 
     private ConcurrentHashMap<Class<? extends Message>, HashSet<AbstractActor>> subscribers = new ConcurrentHashMap<>();
     private PlatformConfiguration configuration = null;
 
+    /**
+     * Creates a platform with given configuration
+     * @param configuration
+     */
     public ImcPlatform(PlatformConfiguration configuration) {
         this.configuration = configuration;
-        calcSubscribers();
 
-        for (Map.Entry<String, AbstractActor> actor : configuration.getActors().entrySet()) {
-            try{
-                actor.getValue().init(this);
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+        for (Map.Entry<String, AbstractActor> actor : configuration.getActors().entrySet())
+            initActor(actor.getValue());
     }
 
+    /**
+     * Creates a platform by reading a configuration from disk
+     * @param configIni The file holding the platform's configuration
+     * @throws IOException In case the file cannot be parsed correctly
+     */
     public ImcPlatform(File configIni) throws IOException {
         this(PlatformConfiguration.load(new IniConfiguration(configIni)));
     }
 
-    private void calcSubscribers() {
-        for (Map.Entry<String, AbstractActor> actor : configuration.getActors().entrySet()) {
-            actor.getValue().getSubscriptions().forEach(m -> {
-                subscribers.getOrDefault(m, new HashSet<>()).add(actor.getValue());
-            });
-        }
-    }
-
-    public Collection<AbstractActor> subscribingActors(Class<? extends Message> message) {
-        return subscribers.get(message);
-    }
-
-    public long timeSinceEpoch() {
-        return configuration.getClock().currentTime();
-    }
-
-    public long timeSinceStart() {
-        return configuration.getClock().ellapsedTime();
-    }
-
+    /**
+     * Create an empty platform
+     * @param imcId The IMC identifier of the platform
+     * @param name The name of thew platform
+     */
     public ImcPlatform(int imcId, String name) {
         configuration = new PlatformConfiguration();
         configuration.setImcId(imcId);
         configuration.setPlatformName(name);
     }
 
+    /**
+     * Create an empty (dummy) platform.
+     * Id will be 0 and name will be "DummyPlatform".
+     */
     public ImcPlatform() {
         this(0, "DummyPlatform");
     }
 
+    /**
+     * Creates and initializes an actor given its class and state
+     * @param actorClass The class of the actor to instantiate, should extend AbstractActor class
+     * @param state The initial state of the actor
+     * @return The instantiated actor
+     * @throws Exception In case the actor cannot be instantiated in this platform
+     */
     public AbstractActor instantiateActor(String actorClass, LinkedHashMap<String, String> state) throws Exception {
         AbstractActor actor = (AbstractActor) Class.forName(actorClass).newInstance();
 
         for (Map.Entry<String, String> props : state.entrySet()) {
             PojoConfig.setProperty(actor, props.getKey(), props.getValue());
         }
+        initActor(actor);
 
         configuration.addActor(actor, actor.getClass().getSimpleName());
+
         return actor;
     }
 
+    private void initActor(AbstractActor actor) {
+        try{
+            actor.init(this);
+            actor.getSubscriptions().forEach(m -> {
+                subscribers.getOrDefault(m, new HashSet<>()).add(actor);
+            });
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Returns a list of actors that react to a type of message
+     * @param message The message type
+     * @return Corresponding list of subscribers
+     */
+    public Collection<AbstractActor> subscribingActors(Class<? extends Message> message) {
+        return subscribers.get(message);
+    }
+
+    /**
+     * Retrieve absolute time (given platform's configured clock)
+     * @return absolute time, in milliseconds, since midnight 1st Jan 1970
+     */
+    public long timeSinceEpoch() {
+        return configuration.getClock().currentTime();
+    }
+
+    /**
+     * Time, in milliseconds, since some time in the past (start of the platform)
+     * @return time since some time in the past (start of the platform)
+     */
+    public long timeSinceStart() {
+        return configuration.getClock().ellapsedTime();
+    }
+
+    /**
+     * Retrieve a device from the platform's hardware configuration
+     * @param device The device specification
+     * @param type The class of the device to retrieve
+     * @return The corresponding device or <code>null</code> if the device is not present.
+     */
     public IDevice getDevice(Device device, Class<?> type) {
 
         Optional<ISensor> sensor = configuration.getSensors().stream().filter(s -> s.getClass().equals(type)).findFirst();
@@ -96,9 +143,14 @@ public class ImcPlatform {
         return null;
     }
 
-
-
+    /**
+     * Remove an actor from this platform
+     * @param name
+     */
     public void destroyActor(String name) {
         configuration.removeActor(name);
     }
+
+
+
 }
