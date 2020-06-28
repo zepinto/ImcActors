@@ -23,6 +23,15 @@ public class ImcPlatform {
     public ImcPlatform(PlatformConfiguration configuration) {
         this.configuration = configuration;
         calcSubscribers();
+
+        for (Map.Entry<String, AbstractActor> actor : configuration.getActors().entrySet()) {
+            try{
+                actor.getValue().init(this);
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public ImcPlatform(File configIni) throws IOException {
@@ -86,6 +95,8 @@ public class ImcPlatform {
 
         return null;
     }
+
+
 
     public void destroyActor(String name) {
         configuration.removeActor(name);
