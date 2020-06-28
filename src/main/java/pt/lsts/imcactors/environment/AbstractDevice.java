@@ -5,6 +5,11 @@ public abstract class AbstractDevice implements IDevice {
     protected PhysicalState state;
     protected PhysicalEnvironment environment;
 
+    public void setState(PhysicalState state, PhysicalEnvironment env) {
+        setPhysicalState(state);
+        setEnvironment(env);
+    }
+
     @Override
     public String name() {
         return getClass().getSimpleName();

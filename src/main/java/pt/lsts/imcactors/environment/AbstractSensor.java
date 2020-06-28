@@ -2,7 +2,7 @@ package pt.lsts.imcactors.environment;
 
 import pt.lsts.imc4j.msg.Message;
 
-public abstract class AbstractSensor<M extends Message> implements ISensor<M> {
+public abstract class AbstractSensor<M extends Message> extends AbstractDevice implements ISensor<M> {
     private M msg;
 
     AbstractSensor(Class<M> msgType) {

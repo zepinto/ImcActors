@@ -3,7 +3,7 @@ package pt.lsts.imcactors.environment;
 import pt.lsts.imc4j.annotations.Parameter;
 import pt.lsts.imc4j.util.WGS84Utilities;
 
-public class UnicycleActuator implements IActuator<UnicycleActuator.UnicycleActuation> {
+public class UnicycleActuator extends AbstractDevice implements IActuator<UnicycleActuator.UnicycleActuation> {
 
     @Parameter
     double max_speed;
@@ -39,7 +39,7 @@ public class UnicycleActuator implements IActuator<UnicycleActuator.UnicycleActu
 
     }
 
-    static class UnicycleActuation implements IActuation {
+    public static class UnicycleActuation implements IActuation {
 
         public double yaw;
         public double speed;

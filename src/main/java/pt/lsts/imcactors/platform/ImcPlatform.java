@@ -20,10 +20,6 @@ public class ImcPlatform {
     private int localImcId;
     private int nextActorId = 0;
 
-    public IDevice getDevice(String name) {
-        return null;
-    }
-
     private void registerActor(Class<? extends ImcActor> actorClass, String name) throws Exception {
         ImcActor actor = actorClass.newInstance();
         actor.init(this);

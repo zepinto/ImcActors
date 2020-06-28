@@ -2,9 +2,11 @@ package pt.lsts.imcactors.test;
 
 import org.junit.Assert;
 import org.junit.Test;
+import pt.lsts.imc4j.msg.Salinity;
+import pt.lsts.imc4j.msg.Temperature;
 import pt.lsts.imcactors.actors.DummyActor;
 import pt.lsts.imcactors.platform.PlatformConfiguration;
-import pt.lsts.imcactors.environment.ConstantSensor;
+import pt.lsts.imcactors.environment.ConstantTemperature;
 import pt.lsts.imcactors.environment.SatelliteMedium;
 import pt.lsts.imcactors.environment.UnicycleActuator;
 import pt.lsts.imcactors.environment.WiFiMedium;
@@ -18,8 +20,7 @@ public class PlatformConfigurationTest {
     @Test
     public void loadConfig() throws Exception {
         PlatformConfiguration configuration = new PlatformConfiguration();
-        configuration.getSensors().add(new ConstantSensor("Temperature", 23));
-        configuration.getSensors().add(new ConstantSensor("Salinity", 34));
+        configuration.getSensors().add(new ConstantTemperature(23));
         configuration.getMedia().add(new WiFiMedium());
         configuration.getMedia().add(new SatelliteMedium());
         configuration.getActuators().add(new UnicycleActuator(1, 15));

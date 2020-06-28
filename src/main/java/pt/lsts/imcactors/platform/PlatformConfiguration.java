@@ -2,14 +2,12 @@ package pt.lsts.imcactors.platform;
 
 import pt.lsts.imc4j.util.PojoConfig;
 import pt.lsts.imcactors.actors.AbstractActor;
-import pt.lsts.imcactors.actors.ImcActor;
 import pt.lsts.imcactors.environment.*;
 import pt.lsts.imcactors.platform.clock.IPlatformClock;
 import pt.lsts.imcactors.platform.clock.RealTimeClock;
 import pt.lsts.imcactors.util.IniConfiguration;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This class holds a platform configuration: its sensors, actuators, media and actors
