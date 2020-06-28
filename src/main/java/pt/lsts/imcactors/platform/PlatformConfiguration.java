@@ -21,6 +21,7 @@ public class PlatformConfiguration {
 
     // Platform actors
     private LinkedHashMap<String, AbstractActor> actors = new LinkedHashMap<>();
+    private LinkedHashMap<String, Integer> actorIds = new LinkedHashMap<>();
 
     // Platform clock
     private IPlatformClock clock = new RealTimeClock();
@@ -34,6 +35,15 @@ public class PlatformConfiguration {
 
         configuration.platformName = ini.get("Platform", "name");
         configuration.imcId = Integer.decode(ini.get("Platform", "id"));
+        String clockClass = ini.get("Platform", "clock");
+        if (clockClass != null) {
+            try {
+                configuration.clock = (IPlatformClock) Class.forName(clockClass).newInstance();
+            }
+            catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
 
         ini.sections().forEach(s -> {
             if (!("Platform".equals(s))) {
@@ -135,7 +145,35 @@ public class PlatformConfiguration {
         return imcId;
     }
 
-    public void addActor(AbstractActor actor, String name) throws Exception {
-        actors.put(name, actor);
+    public IPlatformClock getClock() {
+        return clock;
     }
+
+    public void addActor(AbstractActor actor, String name) throws Exception {
+        int nextId = 0;
+        while (actorIds.containsValue(nextId))
+            nextId++;
+
+        String actorName = name;
+        int i = 1;
+        while(actors.containsKey(actorName))
+            actorName = name+"_"+(i++);
+
+        addActor(actor, actorName, nextId);
+    }
+
+    public void addActor(AbstractActor actor, String name, int id) throws Exception {
+        actors.put(name, actor);
+        actorIds.put(name, id);
+    }
+
+    public void removeActor(String name) {
+        actors.remove(name);
+        actorIds.remove(name);
+    }
+
+    public Map<String, AbstractActor> getActors() {
+        return Collections.unmodifiableMap(actors);
+    }
+
 }

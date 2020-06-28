@@ -1,64 +1,93 @@
 package pt.lsts.imcactors.platform;
 
 import pt.lsts.imc4j.msg.Message;
-import pt.lsts.imcactors.actors.ImcActor;
+import pt.lsts.imc4j.util.PojoConfig;
+import pt.lsts.imcactors.actors.AbstractActor;
+import pt.lsts.imcactors.annotations.Device;
+import pt.lsts.imcactors.environment.IActuator;
+import pt.lsts.imcactors.environment.ICommMedium;
 import pt.lsts.imcactors.environment.IDevice;
-import pt.lsts.imcactors.platform.clock.IPlatformClock;
-import pt.lsts.imcactors.platform.clock.RealTimeClock;
+import pt.lsts.imcactors.environment.ISensor;
+import pt.lsts.imcactors.util.IniConfiguration;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ImcPlatform {
 
-    private IPlatformClock clock = new RealTimeClock();
-    private ConcurrentHashMap<Integer, ImcActor> actors = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<Integer, String> actorNames = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<Class<? extends Message>, HashSet<ImcActor>> subscribers = new ConcurrentHashMap<>();
-    private int localImcId;
-    private int nextActorId = 0;
+    private ConcurrentHashMap<Class<? extends Message>, HashSet<AbstractActor>> subscribers = new ConcurrentHashMap<>();
+    private PlatformConfiguration configuration = null;
 
-    private void registerActor(Class<? extends ImcActor> actorClass, String name) throws Exception {
-        ImcActor actor = actorClass.newInstance();
-        actor.init(this);
-        actor.getSubscriptions().forEach(clazz -> {
-            subscribers.putIfAbsent(clazz, new HashSet<>());
-            subscribers.get(clazz).add(actor);
-        });
-        int actorId = ++nextActorId;
-        actors.put(actorId, actor);
-        actorNames.put(actorId, name);
+    public ImcPlatform(PlatformConfiguration configuration) {
+        this.configuration = configuration;
+        calcSubscribers();
     }
 
-    public Collection<ImcActor> subscribingActors(Class<? extends Message> message) {
+    public ImcPlatform(File configIni) throws IOException {
+        this(PlatformConfiguration.load(new IniConfiguration(configIni)));
+    }
+
+    private void calcSubscribers() {
+        for (Map.Entry<String, AbstractActor> actor : configuration.getActors().entrySet()) {
+            actor.getValue().getSubscriptions().forEach(m -> {
+                subscribers.getOrDefault(m, new HashSet<>()).add(actor.getValue());
+            });
+        }
+    }
+
+    public Collection<AbstractActor> subscribingActors(Class<? extends Message> message) {
         return subscribers.get(message);
     }
 
     public long timeSinceEpoch() {
-        return clock.currentTime();
+        return configuration.getClock().currentTime();
     }
 
     public long timeSinceStart() {
-        return clock.ellapsedTime();
+        return configuration.getClock().ellapsedTime();
     }
 
     public ImcPlatform(int imcId, String name) {
-        this.localImcId = imcId;
+        configuration = new PlatformConfiguration();
+        configuration.setImcId(imcId);
+        configuration.setPlatformName(name);
     }
 
     public ImcPlatform() {
         this(0, "DummyPlatform");
     }
 
-    public ImcActor instantiateActor(String actorClass, LinkedHashMap<String, String> state) {
-        // TODO
+    public AbstractActor instantiateActor(String actorClass, LinkedHashMap<String, String> state) throws Exception {
+        AbstractActor actor = (AbstractActor) Class.forName(actorClass).newInstance();
+
+        for (Map.Entry<String, String> props : state.entrySet()) {
+            PojoConfig.setProperty(actor, props.getKey(), props.getValue());
+        }
+
+        configuration.addActor(actor, actor.getClass().getSimpleName());
+        return actor;
+    }
+
+    public IDevice getDevice(Device device, Class<?> type) {
+
+        Optional<ISensor> sensor = configuration.getSensors().stream().filter(s -> s.getClass().equals(type)).findFirst();
+        if (sensor.isPresent())
+            return sensor.get();
+
+        Optional<IActuator> actuator = configuration.getActuators().stream().filter(a -> a.getClass().equals(type)).findFirst();
+        if (actuator.isPresent())
+            return actuator.get();
+
+        Optional<ICommMedium> medium = configuration.getMedia().stream().filter(m -> m.getClass().equals(type)).findFirst();
+        if (medium.isPresent())
+            return medium.get();
+
         return null;
     }
 
-    public void destroyActor(ImcActor actor) {
-        // TODO
+    public void destroyActor(String name) {
+        configuration.removeActor(name);
     }
-
 }

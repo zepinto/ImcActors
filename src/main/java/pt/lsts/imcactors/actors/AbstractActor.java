@@ -127,7 +127,7 @@ public abstract class AbstractActor {
                         // also inject devices on the method invocation
                         if (m.getParameterAnnotations().length > 1) {
                             for (int i = 1; i < args.length; i++)
-                                args[i] = platform.getDevice(((Device)(m.getParameterAnnotations()[i][0])).value());
+                                args[i] = platform.getDevice(((Device)(m.getParameterAnnotations()[i][0])), m.getParameterTypes()[i]);
                         }
                         outbox.addAll(invoke(m, args));
                     }
@@ -147,5 +147,7 @@ public abstract class AbstractActor {
     public final long getTimeEllapsed() {
         return platform.timeSinceStart();
     }
+
+
 
 }
