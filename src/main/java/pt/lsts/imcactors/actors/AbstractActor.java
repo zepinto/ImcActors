@@ -2,6 +2,7 @@ package pt.lsts.imcactors.actors;
 
 import pt.lsts.imc4j.msg.Message;
 import pt.lsts.imcactors.annotations.Device;
+import pt.lsts.imcactors.annotations.Periodic;
 import pt.lsts.imcactors.annotations.Receive;
 import pt.lsts.imcactors.exceptions.MalformedActorException;
 import pt.lsts.imcactors.platform.ImcPlatform;
@@ -11,10 +12,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
@@ -23,6 +21,8 @@ public abstract class AbstractActor {
 
     private final ConcurrentHashMap<Class<? extends Message>, ArrayList<Method>> consumers = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Class<? extends Message>, ArrayList<Method>> producers = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Method, Periodic> periodicCallbacks = new ConcurrentHashMap<>();
+
     private final ArrayList<String> platformRequirements = new ArrayList<>();
     private ImcPlatform platform;
 
@@ -30,6 +30,10 @@ public abstract class AbstractActor {
 
     public final Collection<Class<? extends Message>> getSubscriptions() {
         return consumers.keySet();
+    }
+
+    public final Map<Method, Periodic> getPeriodicCallbacks() {
+        return Collections.unmodifiableMap(periodicCallbacks);
     }
 
     public final void init(ImcPlatform platform) throws MalformedActorException {
@@ -79,6 +83,10 @@ public abstract class AbstractActor {
             consumers.putIfAbsent((Class<? extends Message>)params[0], new ArrayList<>());
             consumers.get(params[0]).add(c);
         }
+
+        for (Method m : ReflectionUtilities.getAnnotatedMethods(Periodic.class, getClass()))
+            periodicCallbacks.put(m, m.getAnnotation(Periodic.class));
+
     }
 
     private final ArrayList<Message> invoke(Method m, Object... args) {
@@ -147,7 +155,5 @@ public abstract class AbstractActor {
     public final long getTimeEllapsed() {
         return platform.timeSinceStart();
     }
-
-
 
 }

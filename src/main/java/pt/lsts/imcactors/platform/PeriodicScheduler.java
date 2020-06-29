@@ -5,6 +5,7 @@ import pt.lsts.imcactors.annotations.Periodic;
 import pt.lsts.imcactors.util.DurationUtilities;
 import pt.lsts.imcactors.util.ReflectionUtilities;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.TreeSet;
@@ -36,7 +37,18 @@ public class PeriodicScheduler {
         return callbacks.first().nextCallbackTimeMillis;
     }
 
-    private class PeriodicCallback implements Comparable<PeriodicCallback> {
+    public void callFirst() {
+        PeriodicCallback first = callbacks.pollFirst();
+        try {
+            first.call();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        callbacks.add(first);
+    }
+
+    public static class PeriodicCallback implements Comparable<PeriodicCallback> {
         Object instance;
         Method m;
         long nextCallbackTimeMillis;
@@ -46,7 +58,10 @@ public class PeriodicScheduler {
         public int compareTo(PeriodicCallback o) {
             return ((Long)nextCallbackTimeMillis).compareTo(o.nextCallbackTimeMillis);
         }
+
+        public void call() throws Exception {
+            m.invoke(instance);
+            nextCallbackTimeMillis += periodMillis;
+        }
     }
-
-
 }

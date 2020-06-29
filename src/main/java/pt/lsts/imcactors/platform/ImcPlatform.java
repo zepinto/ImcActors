@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingDeque;
 
 /**
  * This class represents a platform (vehicle, console, gateway, ...)
@@ -23,6 +24,60 @@ public class ImcPlatform {
 
     private ConcurrentHashMap<Class<? extends Message>, HashSet<AbstractActor>> subscribers = new ConcurrentHashMap<>();
     private PlatformConfiguration configuration = null;
+    private PeriodicScheduler schedule = new PeriodicScheduler();
+    private TreeSet<Message> inbox = new TreeSet<>((m1, m2) -> new Double(m1.timestamp).compareTo(m2.timestamp));
+
+    public Long nextEvent() {
+        Message firstMessage = inbox.first();
+        long nextCallback = schedule.nextCallbackTime();
+
+        if (nextCallback == 0) {
+            if (firstMessage == null)
+                return null;
+            else
+                return (long) firstMessage.timestamp * 1000;
+        }
+        else {
+            if (firstMessage == null)
+                return nextCallback;
+            else return Math.min(nextCallback,  (long) firstMessage.timestamp * 1000);
+        }
+    }
+
+    public void advanceToTime(long time) {
+        while (true) {
+            long nextCall = schedule.nextCallbackTime();
+            long nextMessage = inbox.isEmpty()? 0 : (long) inbox.first().timestamp * 1000;
+
+            if (nextCall == 0) {
+                if (nextMessage == 0 || nextMessage > time)
+                    break;
+                postMessage(inbox.pollFirst());
+                continue;
+            }
+            else if (nextMessage == 0) {
+                if (nextCall == 0 || nextCall > time)
+                    break;
+                schedule.callFirst();
+                continue;
+            }
+            else {
+                if (nextCall < nextMessage)
+                    schedule.callFirst();
+                else
+                    postMessage(inbox.pollFirst());
+                continue;
+            }
+        }
+    }
+
+    private void postMessage(Message m) {
+        ArrayList<AbstractActor> subs = new ArrayList<>();
+        subs.addAll(subscribers.getOrDefault(m.getClass(), new HashSet<>()));
+        subs.sort(Comparator.comparing(a -> a.getClass().getSimpleName()));
+
+        subs.forEach(actor -> actor.process(m, false));
+    }
 
     /**
      * Creates a platform with given configuration
@@ -89,6 +144,8 @@ public class ImcPlatform {
             actor.getSubscriptions().forEach(m -> {
                 subscribers.getOrDefault(m, new HashSet<>()).add(actor);
             });
+            schedule.register(actor, timeSinceEpoch());
+
         }
         catch (Exception e) {
             e.printStackTrace();
