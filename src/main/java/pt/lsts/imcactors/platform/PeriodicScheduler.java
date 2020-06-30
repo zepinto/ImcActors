@@ -1,5 +1,6 @@
 package pt.lsts.imcactors.platform;
 
+import pt.lsts.imc4j.msg.Message;
 import pt.lsts.imcactors.actors.AbstractActor;
 import pt.lsts.imcactors.annotations.Periodic;
 import pt.lsts.imcactors.util.DurationUtilities;
@@ -7,8 +8,7 @@ import pt.lsts.imcactors.util.ReflectionUtilities;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.List;
-import java.util.TreeSet;
+import java.util.*;
 
 public class PeriodicScheduler {
 
@@ -37,20 +37,48 @@ public class PeriodicScheduler {
         return callbacks.first().nextCallbackTimeMillis;
     }
 
-    public void callFirst() {
-        PeriodicCallback first = callbacks.pollFirst();
+    public List<Message> trigger(PeriodicCallback callback) {
+        boolean addBack = false;
+        if (callbacks.contains(callback)) {
+            callbacks.remove(callback);
+            addBack = true;
+        }
+
+        Object result = null;
         try {
-            first.call();
+            result = callback.call();
         }
         catch (Exception e) {
             e.printStackTrace();
         }
-        callbacks.add(first);
+        if (addBack)
+            callbacks.add(callback);
+
+        if (result == null)
+            return new ArrayList<>();
+        if (result instanceof Message)
+            return Collections.singletonList((Message)result);
+        else if (Collection.class.isAssignableFrom(result.getClass())) {
+            ArrayList<Message> res = new ArrayList<>();
+            res.addAll((Collection<Message>)result);
+            return res;
+        }
+        else {
+            System.err.println("Unexpected return type: "+result.getClass());
+            return new ArrayList<>();
+        }
+
+
+    }
+
+    public List<Message> callFirst() {
+        return trigger(callbacks.pollFirst());
     }
 
     public static class PeriodicCallback implements Comparable<PeriodicCallback> {
         Object instance;
         Method m;
+
         long nextCallbackTimeMillis;
         long periodMillis;
 
@@ -59,9 +87,14 @@ public class PeriodicScheduler {
             return ((Long)nextCallbackTimeMillis).compareTo(o.nextCallbackTimeMillis);
         }
 
-        public void call() throws Exception {
-            m.invoke(instance);
+        public long getNextCallbackTimeMillis() {
+            return nextCallbackTimeMillis;
+        }
+
+        public Object call() throws Exception {
+            Object result = m.invoke(instance);
             nextCallbackTimeMillis += periodMillis;
+            return result;
         }
     }
 }

@@ -3,18 +3,17 @@ package pt.lsts.imcactors.platform.events;
 import pt.lsts.imcactors.actors.AbstractActor;
 import pt.lsts.imcactors.platform.ImcPlatform;
 
-import java.util.List;
-
 public abstract class PlatformEvent implements Comparable<PlatformEvent> {
     protected AbstractActor actor;
+    protected ImcPlatform platform;
     protected long timestamp;
 
-    public PlatformEvent(AbstractActor actor, long timestamp) {
-        this.actor = actor;
+    public PlatformEvent(ImcPlatform platform, long timestamp) {
+        this.platform = platform;
         this.timestamp = timestamp;
     }
 
-    public abstract List<PlatformEvent> processEvent(ImcPlatform platform);
+    public abstract void processEvent();
 
     public abstract String describe();
 
@@ -23,13 +22,17 @@ public abstract class PlatformEvent implements Comparable<PlatformEvent> {
         return getClass().getSimpleName().replaceAll("Event", "")
                 +"{" +
                     "timestamp=" + timestamp +
-                    ", actor=" + actor +
+                    ", platform=" + platform +
                     ", event="+describe()
                 +"}";
     }
 
+    public long getTimestamp() {
+        return timestamp;
+    }
+
     @Override
     public int compareTo(PlatformEvent o) {
-        return toString().compareTo(o.toString());
+        return Long.compare(timestamp, o.timestamp);
     }
 }

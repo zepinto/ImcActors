@@ -8,13 +8,13 @@ import pt.lsts.imcactors.environment.IActuator;
 import pt.lsts.imcactors.environment.ICommMedium;
 import pt.lsts.imcactors.environment.IDevice;
 import pt.lsts.imcactors.environment.ISensor;
+import pt.lsts.imcactors.platform.events.PlatformEvent;
 import pt.lsts.imcactors.util.IniConfiguration;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingDeque;
 
 /**
  * This class represents a platform (vehicle, console, gateway, ...)
@@ -22,61 +22,47 @@ import java.util.concurrent.LinkedBlockingDeque;
  */
 public class ImcPlatform {
 
+    // Actors in this platform, classified by messages they listen to
     private ConcurrentHashMap<Class<? extends Message>, HashSet<AbstractActor>> subscribers = new ConcurrentHashMap<>();
+    // Ths platform's configuration (sensors, actuators, media, actors)
     private PlatformConfiguration configuration = null;
+    // The periodic callbacks schedule for this platform
     private PeriodicScheduler schedule = new PeriodicScheduler();
-    private TreeSet<Message> inbox = new TreeSet<>((m1, m2) -> new Double(m1.timestamp).compareTo(m2.timestamp));
+    // The incoming messages (from other platforms), ordered by timestamp of future reception
+    private TreeSet<PlatformEvent> timedEvents = new TreeSet<>(Comparator.comparingLong(PlatformEvent::getTimestamp));
 
+    /**
+     * @return The time for the next upcoming event
+     */
     public Long nextEvent() {
-        Message firstMessage = inbox.first();
-        long nextCallback = schedule.nextCallbackTime();
-
-        if (nextCallback == 0) {
-            if (firstMessage == null)
-                return null;
-            else
-                return (long) firstMessage.timestamp * 1000;
-        }
-        else {
-            if (firstMessage == null)
-                return nextCallback;
-            else return Math.min(nextCallback,  (long) firstMessage.timestamp * 1000);
-        }
+        return timedEvents.isEmpty()? null : timedEvents.first().getTimestamp();
     }
 
-    public void advanceToTime(long time) {
-        while (true) {
-            long nextCall = schedule.nextCallbackTime();
-            long nextMessage = inbox.isEmpty()? 0 : (long) inbox.first().timestamp * 1000;
+    /**
+     * Process a triggered callback
+     * @param callback
+     */
+    public void processCallback(PeriodicScheduler.PeriodicCallback callback) {
+        List<Message> msgs = schedule.trigger(callback);
 
-            if (nextCall == 0) {
-                if (nextMessage == 0 || nextMessage > time)
-                    break;
-                postMessage(inbox.pollFirst());
-                continue;
-            }
-            else if (nextMessage == 0) {
-                if (nextCall == 0 || nextCall > time)
-                    break;
-                schedule.callFirst();
-                continue;
-            }
-            else {
-                if (nextCall < nextMessage)
-                    schedule.callFirst();
-                else
-                    postMessage(inbox.pollFirst());
-                continue;
-            }
-        }
+        for (Message m : msgs)
+            postMessage(m);
     }
 
-    private void postMessage(Message m) {
+    public void postMessage(Message m) {
+        processMessage(m, new ArrayList<>());
+    }
+
+    private void processMessage(Message msg, ArrayList<Message> msgs) {
         ArrayList<AbstractActor> subs = new ArrayList<>();
-        subs.addAll(subscribers.getOrDefault(m.getClass(), new HashSet<>()));
+        subs.addAll(subscribers.getOrDefault(msg.getClass(), new HashSet<>()));
         subs.sort(Comparator.comparing(a -> a.getClass().getSimpleName()));
+        subs.forEach(actor -> msgs.addAll(actor.process(msg, false)));
 
-        subs.forEach(actor -> actor.process(m, false));
+        if (!msgs.isEmpty()) {
+            Message first = msgs.remove(0);
+            processMessage(first, msgs);
+        }
     }
 
     /**
